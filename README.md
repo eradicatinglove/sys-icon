@@ -81,11 +81,6 @@ Visible in tools that use live control data:
 
 ## 🔧 How to build
 
-### 1. Install devkitPro
-
-Follow the official instructions:
-https://devkitpro.org/wiki/Getting_Started
-
 Make sure `devkitA64` is installed.
 
 ---
