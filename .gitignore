@@ -1,0 +1,30 @@
+# Build output
+build/
+out/
+*.o
+*.a
+*.elf
+*.nro
+*.nso
+*.nsp
+
+# Keys / secrets
+prod.keys
+keys.dat
+*.keys
+
+# Decrypted / extracted content
+*.nca
+*.tik
+*.cert
+*.cnmt
+nspDecrypted/
+
+# OS junk
+.DS_Store
+Thumbs.db
+
+# IDE files
+.vscode/
+.idea/
+

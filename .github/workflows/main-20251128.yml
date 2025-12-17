@@ -1,0 +1,181 @@
+name: Build & Release
+
+on:
+  workflow_dispatch:
+
+jobs:
+  container-build:
+    runs-on: ubuntu-latest
+    container: devkitpro/devkita64:latest
+    steps:
+      - name: checkout - project
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          fetch-depth: 1
+      
+      - name: Configure Git safe directory
+        run: |
+          git config --global --add safe.directory /__w/switch-sys-tweak/switch-sys-tweak
+      
+      - name: Extract version from Makefile
+        id: extract_version
+        run: |
+          if grep -q "APP_TITLE" Makefile; then
+            APP_TITLE=$(grep -oP 'APP_TITLE\s*:=\s*\K.*' Makefile)
+          else
+            APP_TITLE="sys-tweak"
+          fi
+          
+          if grep -q "VERSION_MAJOR" Makefile; then
+            VERSION_MAJOR=$(grep -oP 'VERSION_MAJOR\s*:=\s*\K.*' Makefile)
+            VERSION_MINOR=$(grep -oP 'VERSION_MINOR\s*:=\s*\K.*' Makefile)
+            VERSION_MICRO=$(grep -oP 'VERSION_MICRO\s*:=\s*\K.*' Makefile)
+            APP_VERSION="v${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_MICRO}"
+          else
+            APP_VERSION="v$(date +%Y%m%d)"
+          fi
+          
+          echo "app_title=${APP_TITLE}" >> $GITHUB_OUTPUT
+          echo "app_version=${APP_VERSION}" >> $GITHUB_OUTPUT
+          echo "Extracted APP_TITLE: $APP_TITLE"
+          echo "Extracted APP_VERSION: $APP_VERSION"
+      
+      - name: Build Atmosphère libstratosphere dependency
+        run:
+          make -C lib/ams/libstratosphere -j$(nproc)
+      - name: build - FEAT_ALL (standard)
+        run: |
+          make clean
+          make FEAT_ALL="Y" -j$(nproc)
+          mkdir -p build_output/standard
+          cp -p out/sys-tweak.nsp build_output/standard/sys-tweak_standard.nsp
+          ls -la build_output/standard/
+      
+      - name: Package FEAT_ALL build to zip
+        run: |
+          mkdir -p build_output/standard/atmosphere/contents/00FF747765616BFF/
+          cp build_output/standard/sys-tweak_standard.nsp build_output/standard/atmosphere/contents/00FF747765616BFF/exefs.nsp
+          echo '{
+            "name": "sys-tweak",
+            "tid": "00FF747765616BFF",
+            "requires_reboot": true
+          }' > build_output/standard/atmosphere/contents/00FF747765616BFF/toolbox.json
+          mkdir -p build_output/standard/atmosphere/contents/00FF747765616BFF/flags
+          touch build_output/standard/atmosphere/contents/00FF747765616BFF/flags/boot2.flag
+          cd build_output/standard && zip -r ../sys-tweak.zip atmosphere/
+      
+      - name: build - FEAT_ALL + TOGL_LOGGING (with logging)
+        run: |
+          make clean
+          make FEAT_ALL="Y" TOGL_LOGGING="Y" -j$(nproc)
+          mkdir -p build_output/logging
+          cp -p out/sys-tweak.nsp build_output/logging/sys-tweak_logging.nsp
+          ls -la build_output/logging/
+      
+      - name: Package FEAT_ALL+TOGL_LOGGING build to zip
+        run: |
+          mkdir -p build_output/logging/atmosphere/contents/00FF747765616BFF/
+          cp build_output/logging/sys-tweak_logging.nsp build_output/logging/atmosphere/contents/00FF747765616BFF/exefs.nsp
+          echo '{
+            "name": "sys-tweak (logging)",
+            "tid": "00FF747765616BFF",
+            "requires_reboot": true
+          }' > build_output/logging/atmosphere/contents/00FF747765616BFF/toolbox.json
+          mkdir -p build_output/logging/atmosphere/contents/00FF747765616BFF/flags
+          touch build_output/logging/atmosphere/contents/00FF747765616BFF/flags/boot2.flag
+          cd build_output/logging && zip -r ../sys-tweak_log.zip atmosphere/
+      
+      - name: Verify all build_output files
+        run: |
+          ls -la build_output/
+          ls -la build_output/standard/
+          ls -la build_output/logging/
+      
+      - name: Prepare final output
+        run: |
+          mkdir -p out
+          cp build_output/standard/sys-tweak_standard.nsp out/sys-tweak.nsp
+          cp build_output/logging/sys-tweak_logging.nsp out/sys-tweak_log.nsp
+          cp build_output/sys-tweak.zip out/
+          cp build_output/sys-tweak_log.zip out/
+          rm -f out/*.elf out/*.npdm out/*.nso
+          ls -la out/
+      
+      - name: Delete existing tag to avoid conflict
+        run: |
+          git tag -d ${{ steps.extract_version.outputs.app_version }} || true
+          git push origin --delete ${{ steps.extract_version.outputs.app_version }} || true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Create GitHub Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ steps.extract_version.outputs.app_version }}
+          release_name: ${{ steps.extract_version.outputs.app_title }} ${{ steps.extract_version.outputs.app_version }}
+          body: |
+            Automated release for ${{ steps.extract_version.outputs.app_version }}
+            - sys-tweak.nsp: Standard build (FEAT_ALL=Y)
+            - sys-tweak.zip: Standard build (FEAT_ALL=Y)
+            - sys-tweak_log.nsp: Build with logging enabled (FEAT_ALL=Y, TOGL_LOGGING=Y)
+            - sys-tweak_log.zip: Build with logging enabled (FEAT_ALL=Y, TOGL_LOGGING=Y)
+            
+            自动构建版本：${{ steps.extract_version.outputs.app_version }}
+            - sys-tweak.nsp：标准版本（启用全部功能）
+            - sys-tweak.zip：标准版本（启用全部功能，Atmosphère 安装包）
+            - sys-tweak_log.nsp：日志版本（启用全部功能+日志输出）
+            - sys-tweak_log.zip：日志版本（启用全部功能+日志输出，Atmosphère 安装包）
+          draft: false
+          prerelease: false
+      
+      - name: Upload sys-tweak.nsp to Release
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./out/sys-tweak.nsp
+          asset_name: sys-tweak.nsp
+          asset_content_type: application/octet-stream
+      
+      - name: Upload sys-tweak.zip to Release
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./out/sys-tweak.zip
+          asset_name: sys-tweak.zip
+          asset_content_type: application/zip
+      
+      - name: Upload sys-tweak_log.nsp to Release
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./out/sys-tweak_log.nsp
+          asset_name: sys-tweak_log.nsp
+          asset_content_type: application/octet-stream
+      
+      - name: Upload sys-tweak_log.zip to Release
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./out/sys-tweak_log.zip
+          asset_name: sys-tweak_log.zip
+          asset_content_type: application/zip
+      
+      - name: Upload all artifacts (7-day retention)
+        uses: actions/upload-artifact@v4
+        with:
+          name: sys-tweak-${{ steps.extract_version.outputs.app_version }}
+          path: out/*
+          retention-days: 7
+
