@@ -47,7 +47,6 @@ To change HOME icons, you must **rebuild and reinstall the NSP**.
 - Does **not** require reinstalling games
 
 Visible in tools that use live control data:
-- DBI
 - Sphaira
 - Other homebrew applications
 
@@ -66,7 +65,6 @@ Visible in tools that use live control data:
 | Location | Icon override |
 |--------|----------------|
 | HOME menu | ❌ No |
-| DBI | ✅ Yes |
 | Sphaira | ✅ Yes |
 | Homebrew tools | ✅ Yes |
 
@@ -97,3 +95,7 @@ Make sure `devkitA64` is installed.
 ```bash
 git clone https://github.com/eradicatinglove/sys-icon.git
 cd sys-icon
+make clean
+make FEAT_ALL="Y" TOGL_LOGGING="Y"
+
+
