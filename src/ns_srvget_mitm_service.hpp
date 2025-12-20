@@ -1,13 +1,3 @@
-/*
- * sys-icon-changer
- * Minimal ns:am2 MITM for overriding cached home menu icon bytes.
- *
- * Key points (switchbrew):
- * - GetApplicationControlData uses a type-0x6 output buffer (qlaunch uses 0x24000).
- * - NACP is written at buf+0, icon is written at buf+0x4000.
- * - Returns output u32 actual_size.
- */
-
 #pragma once
 
 #include "libams.hpp"
@@ -16,7 +6,10 @@
 #define NSAM2_MITM_SERVICE_NAME "ns:am2"
 
 enum class NsAm2CmdId : u32 {
-    GetApplicationControlData = 400,
+    GetApplicationControlData          = 400,
+    InvalidateAllApplicationControlCache = 401,
+    InvalidateApplicationControlCache  = 404,
+    InvalidateApplicationIconCache     = 408,   // <-- NEW IMPORTANT FOR FIRMWARE 20+
 };
 
 #define NS_AM2_INTERFACE_INFO(C, H) \
@@ -49,3 +42,4 @@ public:
 };
 
 static_assert(IsNsAm2MitmInterface<NsAm2MitmService>);
+
