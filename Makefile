@@ -126,13 +126,13 @@ dist: all
 	rm -rf dist
 
 	# Package into dist/atmosphere using the reserved sysmodule slot
-	mkdir -p dist/atmosphere/contents/$(SYSMODULE_TID)
+	mkdir -p dist/atmosphere/contents/0x00FF69636F6EFF00
 	# Adjust the path below to the same out path the inner project uses
-	cp out/sys-icon.nsp dist/atmosphere/contents/$(SYSMODULE_TID)/exefs.nsp
+	cp out/sys-icon.nsp dist/atmosphere/contents/0x00FF69636F6EFF00/exefs.nsp
 
 	# Create boot2.flag so Atmosphere loads this content as a sysmodule at boot
-	mkdir -p dist/atmosphere/contents/$(SYSMODULE_TID)/flags
-	touch dist/atmosphere/contents/$(SYSMODULE_TID)/flags/boot2.flag
+	mkdir -p dist/atmosphere/contents/0x00FF69636F6EFF00/flags
+	touch dist/atmosphere/contents/0x00FF69636F6EFF00/flags/boot2.flag
 
 
 
