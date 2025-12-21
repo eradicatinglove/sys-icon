@@ -122,10 +122,27 @@ clean:
 mrproper: clean
 	@$(MAKE) -C $(LIBAMS)/libstratosphere clean
 
+dist: all
+	rm -rf dist
+
+	# Package into dist/atmosphere using the reserved sysmodule slot
+	mkdir -p dist/atmosphere/contents/$(SYSMODULE_TID)
+	# Adjust the path below to the same out path the inner project uses
+	cp out/sys-icon.nsp dist/atmosphere/contents/$(SYSMODULE_TID)/exefs.nsp
+
+	# Create boot2.flag so Atmosphere loads this content as a sysmodule at boot
+	mkdir -p dist/atmosphere/contents/$(SYSMODULE_TID)/flags
+	touch dist/atmosphere/contents/$(SYSMODULE_TID)/flags/boot2.flag
+
+
+
+	# Keep old helper files out of dist unless you want them copied.
+	#cd dist; zip -r $(PROJECT_NAME)-$(BUILD_VERSION).zip ./*; cd ../;
+
 
 #---------------------------------------------------------------------------------
 else
-.PHONY:	all
+.PHONY:	all clean dist $(TARGETS)
 
 DEPENDS	:=	$(OFILES:.o=.d)
 
