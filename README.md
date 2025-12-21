@@ -47,7 +47,7 @@ To change HOME icons, you must **rebuild and reinstall the NSP**.
 
 Visible in tools that use live control data:
 - Sphaira
-- ulaunch
+- ulaunch *needs modded version*
 - Other homebrew applications
 
 ---
