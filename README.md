@@ -231,7 +231,7 @@ display_version=1.0.0
 ```
 SD:/atmosphere/
 └── contents/
-    ├── sys-icon/                <-- sysmodule
+    ├── 0x00FF69636F6EFF00/                <-- sysmodule
     └── 0100024008310000/        <-- your game
         ├── config.ini
         └── icon.jpg
@@ -242,7 +242,7 @@ SD:/atmosphere/
 # Credits
 
 - Created by **eradicatinglove**
-- Inspired by sys-tweak workflow but rebuilt cleaner
+- Inspired by sys-tweak workflow but rebuilt for firmware 20.0.0+
 
 
 
