@@ -26,19 +26,12 @@ ams::Result MitmManager::OnNeedsToAccept(int port_index, Server* server) {
 	this->AcceptMitmImpl(server, ams::sf::CreateSharedObjectEmplaced<INTERFACE, SERVICE>(decltype(fsrv)(fsrv), client_info), fsrv)
 
 	switch (port_index) {
-#ifdef HAVE_NSVM_SAFE
-		case MitmManagerPort_NsVm:
-			FileUtils::LogLine("Accepting MitM session for NsVmMitmService on port index %d", port_index);
-			return _MITM_ACCEPT(NsVmMitmInterface, NsVmMitmService);
-#endif
 #ifdef HAVE_NSAM_CONTROL
 		case MitmManagerPort_NsAm2:
-			FileUtils::LogLine("Accepting MitM session for NsAm2MitmService on port index %d", port_index);
-			return _MITM_ACCEPT(NsAm2MitmInterface, NsAm2MitmService);
+			return _MITM_ACCEPT(NsServiceGetterMitmInterface, NsAm2MitmService);
 #endif
 #ifdef HAVE_NSRO_CONTROL
 		case MitmManagerPort_NsRo:
-			FileUtils::LogLine("Accepting MitM session for NsRoMitmService on port index %d", port_index);
 			return _MITM_ACCEPT(NsServiceGetterMitmInterface, NsRoMitmService);
 #endif
 		AMS_UNREACHABLE_DEFAULT_CASE();
@@ -49,12 +42,9 @@ ams::Result MitmManager::OnNeedsToAccept(int port_index, Server* server) {
 
 ams::Result MitmManager::RegisterServers() {
 #define _MITM_REGISTER_SERVER(SERVICE, PORT) \
-	FileUtils::LogLine("Registering %s for port index %d", #SERVICE, PORT); \
+	FileUtils::LogLine("Registering %s", #SERVICE); \
 	R_TRY((this->RegisterMitmServer<SERVICE>(PORT, SERVICE::GetServiceName())))
 
-#ifdef HAVE_NSVM_SAFE
-	 _MITM_REGISTER_SERVER(NsVmMitmService, MitmManagerPort_NsVm);
-#endif
 #ifdef HAVE_NSAM_CONTROL
 	 _MITM_REGISTER_SERVER(NsAm2MitmService, MitmManagerPort_NsAm2);
 #endif

@@ -18,18 +18,11 @@
 
 #include "libams.hpp"
 
-#ifdef HAVE_NSVM_SAFE
-#include "nsvm_mitm_service.hpp"
-#endif
-
 #if defined(HAVE_NSAM_CONTROL) || defined(HAVE_NSRO_CONTROL)
 #include "ns_srvget_mitm_service.hpp"
 #endif
 
 enum {
-#ifdef HAVE_NSVM_SAFE
-	MitmManagerPort_NsVm,
-#endif
 #ifdef HAVE_NSAM_CONTROL
 	MitmManagerPort_NsAm2,
 #endif
@@ -40,9 +33,6 @@ enum {
 };
 
 static constexpr size_t MitmManagerMaxSessions = 1
-#ifdef HAVE_NSVM_SAFE
-	+ NsVmMitmService::GetMaxSessions()
-#endif
 #ifdef HAVE_NSAM_CONTROL
 	+ NsAm2MitmService::GetMaxSessions()
 #endif
@@ -51,7 +41,11 @@ static constexpr size_t MitmManagerMaxSessions = 1
 #endif
 ;
 
-class MitmManager : public ams::sf::hipc::ServerManager<MitmManagerPort_Count, ams::sf::hipc::DefaultServerManagerOptions, MitmManagerMaxSessions> {
+struct MitmManagerOptions : public ams::sf::hipc::DefaultServerManagerOptions {
+    static constexpr bool CanManageMitmServers = true;
+};
+
+class MitmManager : public ams::sf::hipc::ServerManager<MitmManagerPort_Count, MitmManagerOptions, MitmManagerMaxSessions> {
 	private:
 		virtual ams::Result OnNeedsToAccept(int port_index, Server* server) override;
 	public:

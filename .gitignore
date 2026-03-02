@@ -1,30 +1,9 @@
-# Build output
 build/
 out/
-*.o
-*.a
+lib/ams/
 *.elf
-*.nro
 *.nso
+*.npdm
 *.nsp
-
-# Keys / secrets
-prod.keys
-keys.dat
-*.keys
-
-# Decrypted / extracted content
-*.nca
-*.tik
-*.cert
-*.cnmt
-nspDecrypted/
-
-# OS junk
-.DS_Store
-Thumbs.db
-
-# IDE files
-.vscode/
-.idea/
-
+*.map
+toolbox.json

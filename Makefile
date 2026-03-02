@@ -1,15 +1,8 @@
 #---------------------------------------------------------------------------------
 # pull in common atmosphere configuration
 #---------------------------------------------------------------------------------
-LIBAMS := $(dir $(abspath $(lastword $(MAKEFILE_LIST))))lib/ams
+LIBAMS := $(dir $(abspath $(lastword $(MAKEFILE_LIST))))lib/ams/libraries
 include $(LIBAMS)/config/templates/stratosphere.mk
-
-#---------------------------------------------------------------------------------
-# Atmosphère 1.10.0 compatibility flags
-#---------------------------------------------------------------------------------
-CXXFLAGS += -DATMOSPHERE_GREATER_THAN_OR_EQUAL_TO_1_10_0
-CFLAGS += -DATMOSPHERE_GREATER_THAN_OR_EQUAL_TO_1_10_0
-ASFLAGS += -DATMOSPHERE_GREATER_THAN_OR_EQUAL_TO_1_10_0
 
 #---------------------------------------------------------------------------------
 # TARGET is the name of the output
@@ -19,24 +12,17 @@ ASFLAGS += -DATMOSPHERE_GREATER_THAN_OR_EQUAL_TO_1_10_0
 # INCLUDES is a list of directories containing header files
 # EXEFS_SRC is the optional input directory containing data copied into exefs, if anything this normally should only contain "main.npdm".
 #---------------------------------------------------------------------------------
+VERSION     :=  1.0.0
 TARGET		:=	sys-icon
 BUILD		:=	build
 OUTDIR		:=	out
 RESOURCES	:=	res
-SOURCES		+=	src lib/inih
-INCLUDES	+=	src lib/inih
-DEFINES		+=	-DTARGET="\"$(TARGET)\""
+SOURCES		+=	src
+INCLUDES	+=	src lib/ams/libraries/libstratosphere/include lib/ams/libraries/libvapours/include
+DEFINES		+=	-DTARGET="\"$(TARGET)\"" -DVERSION="\"$(VERSION)\""
 
-#---------------------------------------------------------------------------------
-# options for features
-#---------------------------------------------------------------------------------
-FEATURES := NSAM_CONTROL
-TOGGLES := LOGGING
-#---------------------------------------------------------------------------------
-ENABLED_FEATURES := $(foreach feat,$(FEATURES),$(if $(or $(FEAT_$(feat)),$(FEAT_ALL)),$(feat)))
-DEFINES += $(foreach feat,$(ENABLED_FEATURES),-DHAVE_$(feat))
-ENABLED_TOGGLES := $(foreach toggle,$(TOGGLES),$(if $(or $(TOGL_$(toggle)),$(TOGL_ALL)),$(toggle)))
-DEFINES += $(foreach toggle,$(ENABLED_TOGGLES),-DENABLE_$(toggle))
+# All features always enabled
+DEFINES		+=	-DHAVE_NSAM_CONTROL -DHAVE_NSRO_CONTROL -DENABLE_LOGGING
 
 #---------------------------------------------------------------------------------
 # no real need to edit anything past this point unless you need to add additional
@@ -96,6 +82,7 @@ export INCLUDE	:=	$(foreach dir,$(INCLUDES),-I$(CURDIR)/$(dir)) \
 			-I$(CURDIR)/$(BUILD)
 
 export LIBPATHS	:=	$(foreach dir,$(LIBDIRS),-L$(dir)/lib)
+export LIBPATHS += $(foreach dir,$(AMS_LIBDIRS),-L$(dir)/lib/nintendo_nx_arm64_armv8a/release)
 
 export BUILD_EXEFS_SRC := $(TOPDIR)/$(EXEFS_SRC)
 
@@ -105,14 +92,22 @@ export BUILD_EXEFS_SRC := $(TOPDIR)/$(EXEFS_SRC)
 all: $(BUILD)
 
 $(BUILD):
-	@[ -n "$(ENABLED_FEATURES)" ] || (echo "Please enable at least one feature with FEAT_X env vars, where X can be (ALL $(FEATURES))" 1>&2; exit 1)
-	@echo "* ENABLED_FEATURES: $(ENABLED_FEATURES)"
-	@echo "* ENABLED_TOGGLES: $(ENABLED_TOGGLES)"
-	@echo "* Building for Atmosphère 1.10.0 compatibility"
-	@$(MAKE) -C $(LIBAMS)/libstratosphere
 	@[ -d $@ ] || mkdir -p $@
 	@[ -d $(OUTDIR) ] || mkdir -p $(OUTDIR)
 	@$(MAKE) --no-print-directory -C $(BUILD) -f $(CURDIR)/Makefile
+	@mkdir -p out/atmosphere/contents/00FF69636F6EFF00/flags/
+	@touch out/atmosphere/contents/00FF69636F6EFF00/flags/boot2.flag
+	@cp out/$(TARGET).nsp out/atmosphere/contents/00FF69636F6EFF00/exefs.nsp
+	@echo "{" > toolbox.json
+	@echo "    \"name\": \"$(TARGET)\"," >> toolbox.json
+	@echo "    \"tid\": \"00FF69636F6EFF00\"," >> toolbox.json
+	@echo "    \"requires_reboot\": true," >> toolbox.json
+	@echo "    \"version\": \"$(VERSION)\"" >> toolbox.json
+	@echo "}" >> toolbox.json
+	@mv toolbox.json out/atmosphere/contents/00FF69636F6EFF00/toolbox.json
+
+libstrato:
+	@$(MAKE) -C $(LIBAMS)/libstratosphere
 
 #---------------------------------------------------------------------------------
 clean:

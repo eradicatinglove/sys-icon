@@ -1,6 +1,5 @@
 /*
  * Copyright (c) 2020 p-sam
- * Copyright (c) 2025 gzk47
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms and conditions of the GNU General Public License,
@@ -19,24 +18,22 @@
 
 #include <stratosphere.hpp>
 
-// Updated macros for Atmosphère 1.10.0 compatibility
+// Avoid copying prototypes, cmd ids, etc as much as possible
 
 #define AMS_CONCAT_NAMESPACE(A, B) A::B
 
-// Updated method info macro for Atmosphère 1.10.0
 #define AMS_SF_METHOD_INFO_F(CLASSNAME, HANDLER, ENUM_TYPE, NAME, ARGS, ARGNAMES) \
-	AMS_SF_METHOD_INFO(CLASSNAME, HANDLER, (u32)AMS_CONCAT_NAMESPACE(ENUM_TYPE, NAME), ams::Result, NAME, ARGS, ARGNAMES)
+	AMS_SF_METHOD_INFO_9(CLASSNAME, HANDLER, (u32)AMS_CONCAT_NAMESPACE(ENUM_TYPE, NAME), ams::Result, NAME, ARGS, ARGNAMES, ams::hos::Version_Min, ams::hos::Version_Max)
 
 #define AMS_SF_DECLARE_INTERFACE_METHODS(CLASSNAME, CMD_ID, RETURN, NAME, ARGS, ARGNAMES, VERSION_MIN, VERSION_MAX) \
 	RETURN NAME ARGS;
 
-// Updated interface definition macros for Atmosphère 1.10.0
-#define AMS_SF_DEFINE_INTERFACE_F(NAME, MACRO) \
-	AMS_SF_DEFINE_INTERFACE(ams::sf, NAME, MACRO); \
-	using AMS_CONCAT_NAMESPACE(::ams::sf, NAME); \
-	using AMS_CONCAT_NAMESPACE(::ams::sf, Is##NAME)
+#define AMS_SF_DEFINE_INTERFACE_F(NAME, MACRO, INTF_ID) \
+	AMS_SF_DEFINE_INTERFACE(ams::sf_interface, NAME, MACRO, INTF_ID); \
+	using AMS_CONCAT_NAMESPACE(::ams::sf_interface, NAME); \
+	using AMS_CONCAT_NAMESPACE(::ams::sf_interface, Is##NAME)
 
-#define AMS_SF_DEFINE_MITM_INTERFACE_F(NAME, MACRO) \
-	AMS_SF_DEFINE_MITM_INTERFACE(ams::sf, NAME, MACRO); \
-	using AMS_CONCAT_NAMESPACE(::ams::sf, NAME); \
-	using AMS_CONCAT_NAMESPACE(::ams::sf, Is##NAME)
+#define AMS_SF_DEFINE_MITM_INTERFACE_F(NAME, MACRO, INTF_ID) \
+	AMS_SF_DEFINE_MITM_INTERFACE(ams::sf_mitm_interface, NAME, MACRO, INTF_ID); \
+	using AMS_CONCAT_NAMESPACE(::ams::sf_mitm_interface, NAME); \
+	using AMS_CONCAT_NAMESPACE(::ams::sf_mitm_interface, Is##NAME)

@@ -1,0 +1,44 @@
+✅ What you SHOULD update (in order)
+1️⃣ Update devkitPro toolchain (optional but recommended)
+
+Only do this when you’re ready:
+
+sudo dkp-pacman -Syu
+
+
+✔ Needed if Atmosphère requires a newer compiler
+✔ Not required for every AMS release
+
+2️⃣ Update Atmosphère source (NOT blindly)
+
+Inside your project:
+
+cd ~/sys-icon/lib/ams
+git fetch
+git checkout tags/1.11.0   # example
+git submodule update --init --recursive
+
+
+📌 Always use tags, never master.
+
+3️⃣ Rebuild libstratosphere (ALWAYS)
+
+This is mandatory every time Atmosphère or devkitA64 changes.
+
+cd ~/sys-icon/lib/ams/libstratosphere
+make clean
+make -j$(nproc)
+
+
+This avoids:
+
+LTO mismatch
+
+ABI mismatch
+
+Random crashes on boot
+
+4️⃣ Rebuild your sysmodule
+cd ~/sys-icon
+make clean
+make FEAT_ALL=Y TOGL_LOGGING=Y
