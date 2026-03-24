@@ -33,16 +33,42 @@ Confirm libnx version after update:
 STEP 2 — Update Atmosphère libraries in lib/ams/
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-Download the new Atmosphère source for the target firmware version.
-Then copy the entire Atmosphère source into lib/ams/ replacing the old files:
+OPTION A — Via git (recommended)
+─────────────────────────────────
+Pull directly from the official Atmosphère repo using a tagged release.
+Tag names match version numbers exactly (e.g. 1.11.0 for firmware 22.0.0).
 
-  cp -r /path/to/Atmosphere-new/* ~/sys-icon/lib/ams/
+  cd ~/sys-icon/lib/ams
+  git fetch https://github.com/Atmosphere-NX/Atmosphere
+  git checkout tags/1.11.0
+
+If lib/ams has not been initialized as a git repo yet (fresh clone):
+
+  cd ~/sys-icon/lib/ams
+  git init
+  git remote add origin https://github.com/Atmosphere-NX/Atmosphere
+  git fetch
+  git checkout tags/1.11.0
+
+  ✔ Always checkout a tag, never master.
+  ✔ To switch to a different version later: git checkout tags/x.x.x
+
+
+OPTION B — Manual copy (if you downloaded the source zip)
+──────────────────────────────────────────────────────────
+Download the Atmosphère source zip from:
+  https://github.com/Atmosphere-NX/Atmosphere/releases
+
+Extract it and copy the contents into lib/ams/ replacing the old files:
+
+  cp -r /path/to/Atmosphere-source/* ~/sys-icon/lib/ams/
 
 The Makefile expects libraries at lib/ams/libraries/
 That folder is included inside the Atmosphère source root, so
 copying the full source into lib/ams/ puts it in the right place.
 
-Confirm the version is correct after copying:
+
+Confirm the version is correct (either method):
 
   grep "HOS_VERSION_MAJOR" ~/sys-icon/lib/ams/libraries/libvapours/include/vapours/ams/ams_api_version.h
 
@@ -103,7 +129,9 @@ QUICK REFERENCE — Full update sequence
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
   sudo dkp-pacman -Syu
-  cp -r /path/to/Atmosphere-new/* ~/sys-icon/lib/ams/
+  cd ~/sys-icon/lib/ams
+  git fetch https://github.com/Atmosphere-NX/Atmosphere
+  git checkout tags/1.11.0        # replace with target version
   cd ~/sys-icon
   make mrproper
   make libstrato
