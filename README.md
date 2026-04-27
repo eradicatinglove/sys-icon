@@ -47,7 +47,6 @@ It is intended for **homebrew tools, launchers, and the Nintendo HOME menu**.
 - Nintendo Switch with custom firmware
 - Atmosphère (latest recommended)
 - Firmware **22.1.0 or below**
-- devkitPro with devkitA64 installed
 
 ---
 
