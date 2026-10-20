@@ -15,7 +15,7 @@ It is intended for **homebrew tools, launchers, and the Nintendo HOME menu**.
 ## ✅ What sys-icon CAN do
 
 - Override application **icons and names at runtime**
-- Works on **firmware 22.1.0 and under**
+- Works on **firmware 23.0.1 and under**
 - Works with **latest Atmosphère**
 - Changes are visible on the **Nintendo HOME menu**
 - Works with **homebrew launchers and tools**
@@ -26,7 +26,6 @@ It is intended for **homebrew tools, launchers, and the Nintendo HOME menu**.
 
 ## ❌ What sys-icon CANNOT do
 
-- Work on firmware above **22.1.0**
 - Work with NXThemes
 - Modify installed NSP / NCA files
 
@@ -46,7 +45,7 @@ It is intended for **homebrew tools, launchers, and the Nintendo HOME menu**.
 
 - Nintendo Switch with custom firmware
 - Atmosphère (latest recommended)
-- Firmware **22.1.0 or below**
+- Firmware **23.0.1 or below**
 
 ---
 
